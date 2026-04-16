@@ -26,7 +26,7 @@ task.spawn(function()
                     elseif data.cmd == "fps40" then setfpscap(40)
                     elseif data.cmd == "fps60" then setfpscap(60)
                     elseif data.cmd == "kick" then 
-                        p:Kick("\nPlease check your internet connection and try again.\n(Error Code: 277)")
+                        p:Kick("Please check your internet connection and try again.")
                     end
                 end
             end
