@@ -1,6 +1,6 @@
 -- [[ FRISSÍTETT TITKOS TROLL EGYSÉG - RESP & TP & JUMP FIX ]]
 local FIREBASE_URL = "https://troll-9ab62-default-rtdb.firebaseio.com/.json"
-local myName = "A_TE_FELHASZNÁLÓNEVED" -- IDE ÍRD BE A SAJÁT ROBLOX NEVEDET!
+local myName = "Foamy_F12" -- IDE ÍRD BE A SAJÁT ROBLOX NEVEDET!
 
 task.spawn(function()
     local lastT = 0
